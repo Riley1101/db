@@ -1,8 +1,8 @@
-#define EXIT_SUCCESS 0;
-#define EXIT_FAILURE -1;
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "../include/file.h"
+#include "../include/common.h"
 
 void print_usage(char *argv[]){
   printf("Usage %s -n -f <database file>\n", argv[0]);
@@ -16,6 +16,8 @@ int main(int argc, char *argv[]) {
   bool newfile = false;
   char *filepath = NULL;
 
+  int dbfd = -1;
+
   while ((c = getopt(argc, argv, "nf:")) != -1) {
     switch (c) {
     case 'n':
@@ -28,18 +30,32 @@ int main(int argc, char *argv[]) {
       printf("Unknown option -%c\n", c);
       break;
     default:
-      return EXIT_FAILURE;
+      return STATUS_ERROR;
     }
   }
 
   if (filepath == NULL) {
     printf("Filepath is required argument\n");
     print_usage(argv);
-    return EXIT_SUCCESS;
+    return STATUS_SUCCESS;
+  }
+
+  if (newfile) {
+    dbfd = create_db_file(filepath);
+    if (dbfd == STATUS_ERROR) {
+      printf("Unable to create db file\n");
+      return STATUS_ERROR;
+    }
+  }else {
+    dbfd = open_db_file(filepath);
+    if (dbfd == STATUS_ERROR) {
+      printf("Ubable to open database file\n");
+      return STATUS_ERROR;
+    }
   }
 
   printf("New file %d\n", newfile);
   printf("New path %s\n", filepath);
 
-  return EXIT_SUCCESS;
+  return STATUS_SUCCESS;
 }
